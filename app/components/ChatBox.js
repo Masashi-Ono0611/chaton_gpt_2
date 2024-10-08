@@ -3,13 +3,24 @@
 
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";  // 'addDoc'を削除
-import { db } from "../../lib/firebase";  // Firebaseの初期化ファイル
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { db } from "../../lib/firebase"; 
 
-const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
+const ChatBox = () => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
-  const [chatCount, setChatCount] = useState(0);  // 累計会話回数の状態を追加
+  const [chatCount, setChatCount] = useState(0);
+  const [userId, setUserId] = useState(''); // 初期状態は空
+
+  useEffect(() => {
+    // Telegramからユーザー情報を取得
+    if (typeof window !== 'undefined' && window.Telegram) {
+      const user = window.Telegram.WebApp.initDataUnsafe?.user;
+      if (user && user.id) {
+        setUserId(user.id.toString()); // ユーザーIDを設定
+      }
+    }
+  }, []);
 
   const sendMessage = async () => {
     const res = await fetch("/api/chat", {
@@ -32,23 +43,24 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
 
   // Firebaseから会話履歴・会話回数を取得して表示
   useEffect(() => {
-    const q = query(
-      collection(db, "users", userId, "chats"),  // コレクション参照
-      orderBy("timestamp", "asc")  // タイムスタンプで昇順にソート
-    );
+    if (userId) {
+      const q = query(
+        collection(db, "users", userId, "chats"),
+        orderBy("timestamp", "asc")
+      );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const messages = snapshot.docs.map((doc) => doc.data());
-      setChatHistory(messages);
-      setChatCount(snapshot.size);  // ドキュメント数をカウントして会話回数を更新
-    });
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const messages = snapshot.docs.map((doc) => doc.data());
+        setChatHistory(messages);
+        setChatCount(snapshot.size);
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    }
   }, [userId]);
 
   return (
     <Box p={4}>
-      {/* 累計の会話回数を表示 */}
       <Text fontSize="lg" fontWeight="bold">Your Points: {chatCount}</Text>
 
       <VStack spacing={4} align="start">
