@@ -1,30 +1,32 @@
 // app/api/saveMessage/route.js
-import { db } from '../../../lib/firebase';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
-// Firestoreに会話履歴を保存するエンドポイント
+// app/api/saveMessage/route.js
+import { db } from '../../../lib/firebase';
+import { collection, addDoc } from "firebase/firestore";
+
+// Firestoreにデータを保存する関数
+const saveData = async (collectionName, data) => {
+  const collectionRef = collection(db, collectionName);
+  await addDoc(collectionRef, data);
+};
+
+// APIエンドポイント
 export async function POST(request) {
   try {
     const { userId, message, response } = await request.json();
-
-    // Firestoreにデータを保存
-    const chatData = {
-      userId,
+    await saveData(`users/${userId}/chats`, {
       message,
       response,
-      timestamp: Timestamp.now(),
-    };
+      timestamp: new Date(),
+    });
 
-    const docRef = await addDoc(collection(db, 'chats', userId, 'messages'), chatData);
-
-    return new Response(JSON.stringify({ success: true, id: docRef.id }), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to save message' }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
+
