@@ -12,6 +12,18 @@ const ChatBox = ({ userId }) => {
   const [chatHistory, setChatHistory] = useState([]);
   const [chatCount, setChatCount] = useState(0);
 
+  // Telegram SDK から `userId` を取得し、ログに出力
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+      console.log(initDataUnsafe); // ここでユーザー情報を確認
+      const tgUserId = initDataUnsafe?.user?.id;  // TelegramからユーザーIDを取得
+      if (tgUserId) {
+        console.log("Telegram User ID: ", tgUserId);
+      }
+    }
+  }, []);
+
   const sendMessage = async () => {
     const res = await fetch("/api/chat", {
       method: "POST",
