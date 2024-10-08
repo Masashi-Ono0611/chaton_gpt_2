@@ -1,29 +1,49 @@
 //app/page.tsx
-'use client';  // Client Sideで実行されることを明示
+'use client';  // Ensuring client-side execution
 
 import { useEffect, useState } from 'react';
 import ChatBox from './components/ChatBox';
 
 export default function Home() {
-  const [userId, setUserId] = useState('');  // 初期値を空に設定
+  const [userId, setUserId] = useState('');  // Store Telegram user ID
+  const [loading, setLoading] = useState(true);  // To handle loading state
+  const [error, setError] = useState('');  // To handle errors if any
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-      const tgUserId = initDataUnsafe?.user?.id;  // TelegramからユーザーIDを取得
-      if (tgUserId) {
-        setUserId(tgUserId.toString());  // userIdを設定
+    try {
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+        const tgUserId = initDataUnsafe?.user?.id;  // Retrieve user ID from Telegram
+        
+        if (tgUserId) {
+          setUserId(tgUserId.toString());  // Set user ID if available
+        } else {
+          setError("User ID could not be found.");
+        }
       }
+    } catch (err) {
+      setError("Error initializing Telegram SDK.");
+    } finally {
+      setLoading(false);  // Set loading to false when done
     }
   }, []);
+
+  if (loading) {
+    return <p>Loading...</p>;  // While SDK is initializing
+  }
+
+  if (error) {
+    return <p>{error}</p>;  // If there is an error (e.g., Telegram SDK isn't initialized properly)
+  }
 
   return (
     <div>
       <h1>Chat Application</h1>
       {userId ? (
-        <ChatBox userId={userId} />  // userIdが設定された場合のみ表示
+        <ChatBox userId={userId} />  // Pass userId to ChatBox component if available
       ) : (
-        <p>Loading...</p>  // userIdが取得できるまでロード中の表示
+        <p>No User ID found.</p>  // If userId is missing
       )}
     </div>
   );

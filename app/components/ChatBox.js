@@ -6,13 +6,11 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../lib/firebase"; 
 
-// propsで userId を受け取る
+// `props` で userId を受け取るように修正
 const ChatBox = ({ userId }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [chatCount, setChatCount] = useState(0);
-  const [loading, setLoading] = useState(true);  // ローディング状態を追加
-  const [noData, setNoData] = useState(false);   // データがない場合の状態
 
   const sendMessage = async () => {
     const res = await fetch("/api/chat", {
@@ -43,16 +41,8 @@ const ChatBox = ({ userId }) => {
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const messages = snapshot.docs.map((doc) => doc.data());
-        
-        if (messages.length === 0) {
-          setNoData(true);  // データがない場合のフラグを設定
-        } else {
-          setNoData(false);  // データがある場合はフラグをリセット
-        }
-
         setChatHistory(messages);
         setChatCount(snapshot.size);
-        setLoading(false);  // ローディング終了
       });
 
       return () => unsubscribe();
@@ -61,29 +51,16 @@ const ChatBox = ({ userId }) => {
 
   return (
     <Box p={4}>
-      {/* ユーザーIDの取得前のローディング中 */}
-      {loading && <Text>Loading chat history...</Text>}
+      <Text fontSize="lg" fontWeight="bold">Your Points: {chatCount}</Text>
 
-      {/* データがない場合 */}
-      {!loading && noData && <Text>No chat history found.</Text>}
-
-      {/* データがある場合 */}
-      {!loading && !noData && (
-        <>
-          <Text fontSize="lg" fontWeight="bold">Your Points: {chatCount}</Text>
-
-          <VStack spacing={4} align="start">
-            {chatHistory.map((chat, index) => (
-              <Box key={index}>
-                <Text>User: {chat.message}</Text>
-                <Text>ChatGPT: {chat.response}</Text>
-              </Box>
-            ))}
-          </VStack>
-        </>
-      )}
-
-      {/* メッセージ送信部分 */}
+      <VStack spacing={4} align="start">
+        {chatHistory.map((chat, index) => (
+          <Box key={index}>
+            <Text>User: {chat.message}</Text>
+            <Text>ChatGPT: {chat.response}</Text>
+          </Box>
+        ))}
+      </VStack>
       <Input
         placeholder="Type your message"
         value={message}
