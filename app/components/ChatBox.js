@@ -10,6 +10,7 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [chatCount, setChatCount] = useState(0);  // 累計会話回数の状態を追加
 
   const sendMessage = async () => {
     const res = await fetch("/api/chat", {
@@ -26,12 +27,12 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, message, response: data.message }),
     });
-    
+
     // 送信後、テキストボックスを空にする
     setMessage('');
   };
 
-  // Firebaseから会話履歴を取得して表示
+  // Firebaseから会話履歴・会話回数を取得して表示
   useEffect(() => {
     const q = query(
       collection(db, "users", userId, "chats"),  // コレクション参照
@@ -41,6 +42,7 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const messages = snapshot.docs.map((doc) => doc.data());
       setChatHistory(messages);
+      setChatCount(snapshot.size);  // ドキュメント数をカウントして会話回数を更新
     });
 
     return () => unsubscribe();
@@ -48,6 +50,9 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
 
   return (
     <Box p={4}>
+      {/* 累計の会話回数を表示 */}
+      <Text fontSize="lg" fontWeight="bold">Your Points: {chatCount}</Text>
+
       <VStack spacing={4} align="start">
         {chatHistory.map((chat, index) => (
           <Box key={index}>
