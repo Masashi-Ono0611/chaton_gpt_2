@@ -6,8 +6,8 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        {/* Telegram Mini App SDKを読み込む */}
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        {/* 非同期でTelegram Mini App SDKを読み込む */}
+        <script src="https://telegram.org/js/telegram-web-app.js" async></script>
       </Head>
       <body>
         <Main />
