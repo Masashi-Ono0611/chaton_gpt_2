@@ -3,12 +3,11 @@
 
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";  // ここにonSnapshotを追加
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";  // 'addDoc'を削除
 import { db } from "../../lib/firebase";  // Firebaseの初期化ファイル
 
 const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
   const [message, setMessage] = useState("");
-  const [response, setResponse] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [chatCount, setChatCount] = useState(0);  // 累計会話回数の状態を追加
 
@@ -19,7 +18,6 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
       body: JSON.stringify({ prompt: message }),
     });
     const data = await res.json();
-    setResponse(data.message);
 
     // Firebaseにメッセージと応答を保存
     await fetch("/api/saveMessage", {
@@ -67,7 +65,6 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
         onChange={(e) => setMessage(e.target.value)}
       />
       <Button onClick={sendMessage}>Send</Button>
-      {/*<Text mt={4}>{response}</Text> 下に出てくる回答を非表示*/} 
     </Box>
   );
 };
