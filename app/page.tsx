@@ -1,4 +1,4 @@
-// app/page.tsx
+//app/page.tsx
 'use client';  // Client Sideで実行されることを明示
 
 import { useEffect, useState } from 'react';

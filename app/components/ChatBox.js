@@ -6,21 +6,11 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../lib/firebase"; 
 
-const ChatBox = () => {
+// `props` で userId を受け取るように修正
+const ChatBox = ({ userId }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [chatCount, setChatCount] = useState(0);
-  const [userId, setUserId] = useState(''); // 初期状態は空
-
-  useEffect(() => {
-    // Telegramからユーザー情報を取得
-    if (typeof window !== 'undefined' && window.Telegram) {
-      const user = window.Telegram.WebApp.initDataUnsafe?.user;
-      if (user && user.id) {
-        setUserId(user.id.toString()); // ユーザーIDを設定
-      }
-    }
-  }, []);
 
   const sendMessage = async () => {
     const res = await fetch("/api/chat", {
@@ -34,7 +24,7 @@ const ChatBox = () => {
     await fetch("/api/saveMessage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, message, response: data.message }),
+      body: JSON.stringify({ userId, message, response: data.message }),  // userIdを保存時に使用
     });
 
     // 送信後、テキストボックスを空にする
@@ -75,6 +65,11 @@ const ChatBox = () => {
         placeholder="Type your message"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        }}
       />
       <Button onClick={sendMessage}>Send</Button>
     </Box>
