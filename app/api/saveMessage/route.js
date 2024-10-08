@@ -1,6 +1,4 @@
 // app/api/saveMessage/route.js
-
-// app/api/saveMessage/route.js
 import { db } from '../../../lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
 

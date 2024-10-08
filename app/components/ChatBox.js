@@ -3,7 +3,7 @@
 
 import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";  // ここにonSnapshotを追加
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";  // ここにonSnapshotを追加
 import { db } from "../../lib/firebase";  // Firebaseの初期化ファイル
 
 const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
@@ -26,17 +26,22 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, message, response: data.message }),
     });
+    
+    // 送信後、テキストボックスを空にする
+    setMessage('');
   };
 
   // Firebaseから会話履歴を取得して表示
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const q = query(
       collection(db, "users", userId, "chats"),  // コレクション参照
-      (snapshot) => {
-        const messages = snapshot.docs.map((doc) => doc.data());
-        setChatHistory(messages);
-      }
+      orderBy("timestamp", "asc")  // タイムスタンプで昇順にソート
     );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const messages = snapshot.docs.map((doc) => doc.data());
+      setChatHistory(messages);
+    });
 
     return () => unsubscribe();
   }, [userId]);
@@ -57,7 +62,7 @@ const ChatBox = ({ userId }) => {  // propsとしてuserIdを受け取る
         onChange={(e) => setMessage(e.target.value)}
       />
       <Button onClick={sendMessage}>Send</Button>
-      <Text mt={4}>{response}</Text>
+      {/*<Text mt={4}>{response}</Text> 下に出てくる回答を非表示*/} 
     </Box>
   );
 };
