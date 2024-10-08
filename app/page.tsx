@@ -1,50 +1,40 @@
 //app/page.tsx
-'use client';  // Ensuring client-side execution
+'use client';  // Client Sideで実行されることを明示
 
 import { useEffect, useState } from 'react';
 import ChatBox from './components/ChatBox';
 
 export default function Home() {
-  const [userId, setUserId] = useState('');  // Store Telegram user ID
-  const [loading, setLoading] = useState(true);  // To handle loading state
-  const [error, setError] = useState('');  // To handle errors if any
+  const [userId, setUserId] = useState('');  // 初期値を空に設定
+  const [status, setStatus] = useState('loading'); // ステータス管理: loading, noUser, error, ready
 
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready();
         const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-        const tgUserId = initDataUnsafe?.user?.id;  // Retrieve user ID from Telegram
-        
+        const tgUserId = initDataUnsafe?.user?.id;  // TelegramからユーザーIDを取得
         if (tgUserId) {
-          setUserId(tgUserId.toString());  // Set user ID if available
+          setUserId(tgUserId.toString());  // userIdを設定
+          setStatus('ready');  // ユーザーIDが取得できた場合
         } else {
-          setError("User ID could not be found.");
+          setStatus('noUser');  // ユーザーIDが存在しない場合
         }
+      } else {
+        setStatus('error');  // Telegramが初期化されていない場合
       }
-    } catch (err) {
-      setError("Error initializing Telegram SDK.");
-    } finally {
-      setLoading(false);  // Set loading to false when done
+    } catch (error) {
+      console.error("Error occurred during Telegram SDK initialization:", error);
+      setStatus('error');  // エラー時の状態
     }
   }, []);
-
-  if (loading) {
-    return <p>Loading...</p>;  // While SDK is initializing
-  }
-
-  if (error) {
-    return <p>{error}</p>;  // If there is an error (e.g., Telegram SDK isn't initialized properly)
-  }
 
   return (
     <div>
       <h1>Chat Application</h1>
-      {userId ? (
-        <ChatBox userId={userId} />  // Pass userId to ChatBox component if available
-      ) : (
-        <p>No User ID found.</p>  // If userId is missing
-      )}
+      {status === 'loading' && <p>読み込み中...</p>}
+      {status === 'noUser' && <p>ユーザー情報がありません。</p>}
+      {status === 'error' && <p>エラーが発生しました。</p>}
+      {status === 'ready' && <ChatBox userId={userId} />}  {/* userIdが取得できた場合のみ表示 */}
     </div>
   );
 }
