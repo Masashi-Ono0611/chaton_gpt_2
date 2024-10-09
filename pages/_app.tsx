@@ -1,13 +1,15 @@
 // pages/_app.tsx
 import { useEffect } from 'react';
-import { AppProps } from 'next/app';  // 型定義を追加
+import { AppProps } from 'next/app';
 
-function MyApp({ Component, pageProps }: AppProps) {  // AppPropsを使って型を指定
+function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    // Telegram WebAppの初期化
+    // Initialize Telegram WebApp SDK safely
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
       console.log('Telegram SDK Initialized');
+    } else {
+      console.warn('Telegram SDK not available');
     }
   }, []);
 

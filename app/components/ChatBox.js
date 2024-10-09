@@ -6,32 +6,35 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../../lib/firebase"; 
 
-// `props` で userId を受け取るように修正
+// ChatBox component with userId passed as prop
 const ChatBox = ({ userId }) => {
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [chatCount, setChatCount] = useState(0);
 
   const sendMessage = async () => {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: message }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: message }),
+      });
+      const data = await res.json();
 
-    // Firebaseにメッセージと応答を保存
-    await fetch("/api/saveMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, message, response: data.message }),  // userIdを保存時に使用
-    });
+      // Save message and response to Firebase
+      await fetch("/api/saveMessage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, message, response: data.message }),
+      });
 
-    // 送信後、テキストボックスを空にする
-    setMessage('');
+      setMessage(''); // Clear the input field after sending
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
-  // Firebaseから会話履歴・会話回数を取得して表示
+  // Fetch chat history from Firebase
   useEffect(() => {
     if (userId) {
       const q = query(
@@ -66,9 +69,7 @@ const ChatBox = ({ userId }) => {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={(e) => {
-          if (e.key === 'Enter') {
-            sendMessage();
-          }
+          if (e.key === 'Enter') sendMessage();
         }}
       />
       <Button onClick={sendMessage}>Send</Button>

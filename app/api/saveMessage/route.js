@@ -2,13 +2,11 @@
 import { db } from '../../../lib/firebase';
 import { collection, addDoc } from "firebase/firestore";
 
-// Firestoreにデータを保存する関数
 const saveData = async (collectionName, data) => {
   const collectionRef = collection(db, collectionName);
   await addDoc(collectionRef, data);
 };
 
-// APIエンドポイント
 export async function POST(request) {
   try {
     const { userId, message, response } = await request.json();
@@ -27,4 +25,3 @@ export async function POST(request) {
     });
   }
 }
-
