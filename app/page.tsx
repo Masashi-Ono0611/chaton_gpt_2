@@ -8,9 +8,9 @@ export default function Home() {
   const [userId, setUserId] = useState('');
   const [status, setStatus] = useState('loading');
   const [statusMessage, setStatusMessage] = useState('Initializing...');
-  const [logs, setLogs] = useState<string[]>([]); // ログの配列を追加
+  const [logs, setLogs] = useState<string[]>([]);
 
-  // ログを更新して表示する関数
+  // ログを追加する関数
   const addLog = (message: string) => {
     setLogs((prevLogs) => [...prevLogs, message]);
   };
@@ -27,13 +27,14 @@ export default function Home() {
             setStatusMessage('Telegram WebApp exists. Initializing...');
 
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-            const tgUserId = initDataUnsafe?.user?.id;
+            addLog(`initDataUnsafe: ${JSON.stringify(initDataUnsafe)}`); // ユーザー情報の出力
 
-            if (tgUserId) {
+            if (initDataUnsafe?.user?.id) {
+              const tgUserId = initDataUnsafe.user.id;
               setUserId(tgUserId.toString());
               setStatus('ready');
               setStatusMessage('User ID found, application is ready.');
-              addLog('User ID found, application is ready.');
+              addLog('User ID found: ' + tgUserId.toString());
             } else {
               setStatus('noUser');
               setStatusMessage('No user data found in Telegram WebApp.');
@@ -48,11 +49,10 @@ export default function Home() {
       } catch (error) {
         setStatus('error');
         setStatusMessage('Error occurred during Telegram SDK initialization.');
-        addLog(`Error occurred during Telegram SDK initialization: ${error}`);
+        addLog(`Error during Telegram SDK initialization: ${error}`);
       }
     };
 
-    // ドキュメントがロード完了したタイミングで処理を実行
     if (document.readyState === 'complete') {
       addLog('Document is fully loaded.');
       setStatusMessage('Document is fully loaded.');
@@ -84,7 +84,7 @@ export default function Home() {
         </ul>
       </div>
 
-      {/* ロード中、ユーザー情報なし、エラー、準備完了の状態に応じた表示 */}
+      {/* 状態に応じた表示 */}
       {status === 'loading' && <p>Loading...</p>}
       {status === 'noUser' && <p>No User Data</p>}
       {status === 'error' && <p>An error occurred.</p>}
