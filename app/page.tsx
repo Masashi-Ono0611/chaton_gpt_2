@@ -60,19 +60,39 @@ export default function Home() {
       }
     };
 
+    const checkScriptLoad = () => {
+      const script = document.querySelector('script[src="https://telegram.org/js/telegram-web-app.js"]');
+      if (script) {
+        addLog('Step 0: telegram-web-app.js script found.');
+        script.addEventListener('load', () => {
+          addLog('Step 0: telegram-web-app.js script loaded successfully.');
+          checkTelegramWebApp();  // スクリプトのロードが完了した後に初期化処理を実行
+        });
+        script.addEventListener('error', () => {
+          addLog('Step 0: Error loading telegram-web-app.js script.');
+          setStatus('error');
+          setStatusMessage('Failed to load telegram-web-app.js script.');
+        });
+      } else {
+        addLog('Step 0: telegram-web-app.js script not found.');
+        setStatus('error');
+        setStatusMessage('telegram-web-app.js script is missing.');
+      }
+    };
+
     // ドキュメントのロード状況を確認
     if (document.readyState === 'complete') {
-      addLog('Step 0: Document is fully loaded. Starting initialization process.');
+      addLog('Step 0: Document is fully loaded. Checking for script.');
       setStatusMessage('Document is fully loaded.');
-      checkTelegramWebApp();
+      checkScriptLoad();
     } else {
       addLog('Step 0: Waiting for document to load...');
       setStatusMessage('Waiting for document to load...');
-      window.addEventListener('load', checkTelegramWebApp);
+      window.addEventListener('load', checkScriptLoad);
     }
 
     return () => {
-      window.removeEventListener('load', checkTelegramWebApp);
+      window.removeEventListener('load', checkScriptLoad);
     };
   }, []);
 
