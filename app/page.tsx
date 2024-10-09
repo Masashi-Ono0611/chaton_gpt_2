@@ -23,31 +23,39 @@ export default function Home() {
         if (typeof window !== 'undefined') {
           addLog('Step 2: Window object is available.');
 
-          // Telegram WebAppの存在を確認
-          if (window.Telegram?.WebApp) {
-            addLog('Step 3: Telegram WebApp object is available. Proceeding with initialization...');
+          // `window.Telegram` が存在するかどうかをチェック
+          if (window.Telegram) {
+            addLog('Step 3: window.Telegram object is available.');
+            
+            if (window.Telegram.WebApp) {
+              addLog('Step 4: Telegram WebApp object is available. Proceeding with initialization...');
 
-            const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-            addLog(`Step 4: initDataUnsafe retrieved: ${JSON.stringify(initDataUnsafe)}`);
+              const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+              addLog(`Step 5: initDataUnsafe retrieved: ${JSON.stringify(initDataUnsafe)}`);
 
-            // ユーザー情報の確認
-            if (initDataUnsafe?.user?.id) {
-              const tgUserId = initDataUnsafe.user.id;
-              addLog(`Step 5: User ID found: ${tgUserId}`);
+              // ユーザー情報の確認
+              if (initDataUnsafe?.user?.id) {
+                const tgUserId = initDataUnsafe.user.id;
+                addLog(`Step 6: User ID found: ${tgUserId}`);
 
-              setUserId(tgUserId.toString());
-              setStatus('ready');
-              setStatusMessage('Application is ready.');
-              addLog('Step 6: Application is ready and User ID has been set.');
+                setUserId(tgUserId.toString());
+                setStatus('ready');
+                setStatusMessage('Application is ready.');
+                addLog('Step 7: Application is ready and User ID has been set.');
+              } else {
+                setStatus('noUser');
+                setStatusMessage('No user data found in Telegram WebApp.');
+                addLog('Step 6: No user data found in Telegram WebApp.');
+              }
             } else {
-              setStatus('noUser');
-              setStatusMessage('No user data found in Telegram WebApp.');
-              addLog('Step 5: No user data found in Telegram WebApp.');
+              setStatus('error');
+              setStatusMessage('Telegram WebApp object is NOT available.');
+              addLog('Step 4: Telegram WebApp object is NOT available.');
             }
           } else {
             setStatus('error');
-            setStatusMessage('Telegram WebApp is not available.');
-            addLog('Step 3: Telegram WebApp object is NOT available.');
+            setStatusMessage('window.Telegram object is NOT available.');
+            addLog('Step 3: window.Telegram object is NOT available.');
           }
         } else {
           setStatusMessage('Window object not available.');
@@ -56,7 +64,7 @@ export default function Home() {
       } catch (error) {
         setStatus('error');
         setStatusMessage('Error occurred during Telegram SDK initialization.');
-        addLog(`Step 6: Error during Telegram SDK initialization: ${error}`);
+        addLog(`Step 8: Error during Telegram SDK initialization: ${error}`);
       }
     };
 
