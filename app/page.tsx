@@ -12,53 +12,61 @@ export default function Home() {
 
   // ログを追加する関数
   const addLog = (message: string) => {
-    setLogs((prevLogs) => [...prevLogs, message]);
+    setLogs((prevLogs) => [...prevLogs, `[${new Date().toLocaleTimeString()}] ${message}`]);
   };
 
   useEffect(() => {
     const checkTelegramWebApp = () => {
       try {
-        if (typeof window !== 'undefined') {
-          addLog('Window object detected.');
-          setStatusMessage('Window object detected.');
+        addLog('Step 1: Starting Telegram WebApp check...');
 
+        if (typeof window !== 'undefined') {
+          addLog('Step 2: Window object is available.');
+
+          // Telegram WebAppの存在を確認
           if (window.Telegram?.WebApp) {
-            addLog('Telegram WebApp exists. Initializing...');
-            setStatusMessage('Telegram WebApp exists. Initializing...');
+            addLog('Step 3: Telegram WebApp object is available. Proceeding with initialization...');
 
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-            addLog(`initDataUnsafe: ${JSON.stringify(initDataUnsafe)}`); // ユーザー情報の出力
+            addLog(`Step 4: initDataUnsafe retrieved: ${JSON.stringify(initDataUnsafe)}`);
 
+            // ユーザー情報の確認
             if (initDataUnsafe?.user?.id) {
               const tgUserId = initDataUnsafe.user.id;
+              addLog(`Step 5: User ID found: ${tgUserId}`);
+
               setUserId(tgUserId.toString());
               setStatus('ready');
-              setStatusMessage('User ID found, application is ready.');
-              addLog('User ID found: ' + tgUserId.toString());
+              setStatusMessage('Application is ready.');
+              addLog('Step 6: Application is ready and User ID has been set.');
             } else {
               setStatus('noUser');
               setStatusMessage('No user data found in Telegram WebApp.');
-              addLog('No user data found in Telegram WebApp.');
+              addLog('Step 5: No user data found in Telegram WebApp.');
             }
           } else {
             setStatus('error');
             setStatusMessage('Telegram WebApp is not available.');
-            addLog('Telegram WebApp is not available.');
+            addLog('Step 3: Telegram WebApp object is NOT available.');
           }
+        } else {
+          setStatusMessage('Window object not available.');
+          addLog('Step 2: Window object is NOT available.');
         }
       } catch (error) {
         setStatus('error');
         setStatusMessage('Error occurred during Telegram SDK initialization.');
-        addLog(`Error during Telegram SDK initialization: ${error}`);
+        addLog(`Step 6: Error during Telegram SDK initialization: ${error}`);
       }
     };
 
+    // ドキュメントのロード状況を確認
     if (document.readyState === 'complete') {
-      addLog('Document is fully loaded.');
+      addLog('Step 0: Document is fully loaded. Starting initialization process.');
       setStatusMessage('Document is fully loaded.');
       checkTelegramWebApp();
     } else {
-      addLog('Waiting for document to load...');
+      addLog('Step 0: Waiting for document to load...');
       setStatusMessage('Waiting for document to load...');
       window.addEventListener('load', checkTelegramWebApp);
     }
